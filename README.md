@@ -1,5 +1,5 @@
 # HiLoOver
 
-Hi mean high
-Lo mean low
-Over mean Game over
+- Hi mean high
+- Lo mean low
+- Over mean Game over
