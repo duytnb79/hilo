@@ -30,11 +30,15 @@ def test_case(symbol, time_frame, since, limit, params, balance, quantity, lever
                                 limit=1500)
 
     ## Order 
-    book_order, balance, count_win, count_lose = util.run_report(mark_klines=mark_klines, 
-                    balance=balance, 
-                    quantity=quantity, 
-                    leverage=leverage,
-                    limit=limit)
+    try:
+        book_order, balance, count_win, count_lose = util.run_report(mark_klines=mark_klines, 
+                        balance=balance, 
+                        quantity=quantity, 
+                        leverage=leverage,
+                        limit=limit,
+                        risk=2)
+    except:
+        return
     if since == None: since = str(datetime.datetime.now().date())
     if is_export: util.export_csv_order(path='data_test/{}.csv'.format(since), book_order=book_order)
     print("Case {}: {}-{} # {}M-{}W-{}L # Rate: W-L:{}".format(since[0:10], init_balance, round(balance), len(book_order), count_win, count_lose, round(count_win/count_lose,2)))
@@ -56,5 +60,5 @@ if __name__ == '__main__':
 
     for since in start_times:
         test_case(symbol='ADAUSDT', time_frame='1m', since=since, limit=1500, params={}, 
-            balance=2000, quantity=20, leverage=10, is_export=False)
+            balance=100, quantity=10, leverage=20, is_export=False)
     

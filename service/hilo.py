@@ -22,7 +22,7 @@ load_dotenv()
 class HiLoService(object):
 
     def __init__(self, **kwargs):
-        self.LEVERAGE = 20
+        self.LEVERAGE = 10
         self.ALLOW_MONEY = 100
         self.SYMBOL_COIN = 'ETHUSDT'
         self.RISK = 3

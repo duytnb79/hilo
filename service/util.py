@@ -93,7 +93,8 @@ class UtilService(object):
         
         return balance
 
-    def run_report(self, mark_klines, balance, quantity, leverage, limit = 31):
+    def run_report(self, mark_klines, balance, quantity, leverage, limit = 31, risk=2):
+        reward = 10 - risk
         take_profit = 0
         stop_loss = 0
         end = 31
@@ -108,7 +109,7 @@ class UtilService(object):
             if balance < quantity * leverage * last_price: 
                 print('Balance is insufficient. Balance: {}'.format(balance))
                 assert('Balance is insufficient. Balance: {}'.format(balance))
-                return
+                return None, None, None
 
             for book_time, order in book_order.items():
                 if order['is_finish'] == False: 
@@ -119,11 +120,11 @@ class UtilService(object):
             if direction != 'NOT': 
                 entry = last_price
                 if direction == 'BUY':
-                    take_profit = round(last_price + last_price * 0.08 / 20, 2)
-                    stop_loss = round(last_price - last_price * 0.02 / 20, 2)
+                    take_profit = round(last_price + last_price * (reward / 100) / leverage, 2)
+                    stop_loss = round(last_price - last_price * (risk / 100) / leverage, 2)
                 else: 
-                    stop_loss = round(last_price + last_price * 0.02 / 20, 2)
-                    take_profit = round(last_price - last_price * 0.08 / 20, 2)
+                    stop_loss = round(last_price + last_price * (risk / 100) / leverage, 2)
+                    take_profit = round(last_price - last_price * (reward / 100) / leverage, 2)
                 balance -= self.get_fee(last_price, quantity, leverage,side="maker")
                 # print("== Make order")
                 # pprint({
