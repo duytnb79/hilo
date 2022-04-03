@@ -76,6 +76,7 @@ pyparsing==3.0.7
 pyrsistent==0.18.1
 python-binance==1.0.15
 python-dateutil==2.8.2
+python-dotenv==0.20.0
 pytz==2022.1
 pytz-deprecation-shim==0.1.0.post0
 pyzmq==22.3.0
