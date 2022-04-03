@@ -25,8 +25,8 @@ class HiLoService(object):
         self.LEVERAGE = 20
         self.ALLOW_MONEY = 100
         self.SYMBOL_COIN = 'ETHUSDT'
-        self.RISK = 8
-        self.REWARD = 8
+        self.RISK = 3
+        self.REWARD = 7
         self.TIME_UNIT = 1
         self.TIME_SYMBOL = 'm'
         self.symbol = 'ETHUSDT' 
@@ -54,13 +54,13 @@ class HiLoService(object):
         else: return False
     
     
-    def run_hilo(self): 
+    def run_hilo(self, is_test=False): 
         i = 0 
         while True: 
             i += 1 
             candle = list(map(self.handle_candle_data, self.client.klines(self.SYMBOL_COIN, '{}{}'.format(self.TIME_UNIT, self.TIME_SYMBOL), limit=31)))
             direction = FormulaService.formula(candle)
-            direction = 'BUY'
+            if is_test: direction = 'BUY'
             last_price = float(Decimal(candle[-1]['close']))
             print("Time {} price {} direction {} is_can_next_order: {}".format(candle[-1]['close_time'], candle[-1]['close'], direction, self.is_can_next_order()))
             
@@ -68,7 +68,7 @@ class HiLoService(object):
                 take_profit_price, stop_loss_price, reverse_direction = self.get_metric_to_order(direction, last_price)
                 quantity = self.get_quantity_allow(last_price)
                 orders = self.book_order(direction, reverse_direction, quantity, take_profit_price, stop_loss_price)
-                self.book_orders = self.book_orders.extend(orders) 
+                self.book_orders.extend(orders) 
                 pprint({
                     "market_price":last_price,
                     "quantity":quantity, 
