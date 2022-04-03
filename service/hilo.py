@@ -23,7 +23,7 @@ class HiLoService(object):
 
     def __init__(self, **kwargs):
         self.LEVERAGE = 10
-        self.ALLOW_MONEY = 100
+        self.ALLOW_MONEY = 1500
         self.SYMBOL_COIN = 'ETHUSDT'
         self.RISK = 3
         self.REWARD = 7
@@ -31,13 +31,17 @@ class HiLoService(object):
         self.TIME_SYMBOL = 'm'
         self.symbol = 'ETHUSDT' 
         self.book_orders = [] 
-        self.base_url='https://testnet.binancefuture.com/'
+        self.base_url='https://testnet.binancefuture.com/' 
         self.client = Futures(
             key=os.environ.get('KEY_TESTNET_BINANCE'),
             secret=os.environ.get('SECRET_TESTNET_BINANCE'), 
             base_url=self.base_url)
         self.info = self.client.exchange_info() 
         self.change_margin_type()
+        self.change_margin_leverage()
+
+    def change_margin_leverage(self):
+        self.client.change_leverage(symbol=self.SYMBOL_COIN,leverage= self.LEVERAGE, recvWindow=6000)
 
     def change_margin_type(self, _type='ISOLATED'):
         try:
@@ -56,19 +60,22 @@ class HiLoService(object):
     
     def run_hilo(self, is_test=False): 
         i = 0 
+        order_time = []
         while True: 
             i += 1 
             candle = list(map(self.handle_candle_data, self.client.klines(self.SYMBOL_COIN, '{}{}'.format(self.TIME_UNIT, self.TIME_SYMBOL), limit=31)))
             direction = FormulaService.formula(candle)
             if is_test: direction = 'BUY'
             last_price = float(Decimal(candle[-1]['close']))
-            print("Time {} price {} direction {} is_can_next_order: {}".format(candle[-1]['close_time'], candle[-1]['close'], direction, self.is_can_next_order()))
+            print("Time {} price {} direction {}".format(candle[-1]['close_time'], candle[-1]['close'], direction))
             
-            if direction != '' and self.is_can_next_order(): 
+            if direction != '' and str(candle[-1]['close_time'])[:10] not in order_time: #and self.is_can_next_order(): 
                 take_profit_price, stop_loss_price, reverse_direction = self.get_metric_to_order(direction, last_price)
                 quantity = self.get_quantity_allow(last_price)
                 orders = self.book_order(direction, reverse_direction, quantity, take_profit_price, stop_loss_price)
-                self.book_orders.extend(orders) 
+                self.book_orders.extend(orders)  
+                print('orders',orders)
+                order_time.append(str(datetime.datetime.fromtimestamp(orders[0]['updateTime']/1000))[:10])
                 pprint({
                     "market_price":last_price,
                     "quantity":quantity, 

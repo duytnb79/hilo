@@ -36,7 +36,7 @@ def test_case(symbol, time_frame, since, limit, params, balance, quantity, lever
                         quantity=quantity, 
                         leverage=leverage,
                         limit=limit,
-                        risk=2)
+                        risk=3)
     except:
         return
     if since == None: since = str(datetime.datetime.now().date())
