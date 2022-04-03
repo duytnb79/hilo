@@ -1,0 +1,60 @@
+
+import datetime 
+import os
+from service.util import UtilService
+from binance.futures import Futures 
+from dotenv import load_dotenv
+
+load_dotenv()
+## get exchange 
+util = UtilService() 
+client = Futures(
+    key=os.environ.get('KEY_TESTNET_BINANCE'),
+    secret=os.environ.get('SECRET_TESTNET_BINANCE'))
+
+def iso_to_timestamp(date_time_str):
+    if date_time_str == None: return None
+    return int(datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S.%fZ").timestamp() * 1000)
+
+def timestamp_to_iso(timestamp):
+    if timestamp == None: return None
+    return datetime.datetime.fromtimestamp(timestamp/1000)
+
+def test_case(symbol, time_frame, since, limit, params, balance, quantity, leverage, is_export=True):
+    init_balance = balance
+   
+    ## Get Chart  
+    mark_klines = client.klines(symbol, 
+                                time_frame, 
+                                endTime= iso_to_timestamp(since),
+                                limit=1500)
+
+    ## Order 
+    book_order, balance, count_win, count_lose = util.run_report(mark_klines=mark_klines, 
+                    balance=balance, 
+                    quantity=quantity, 
+                    leverage=leverage,
+                    limit=limit)
+    if since == None: since = str(datetime.datetime.now().date())
+    if is_export: util.export_csv_order(path='data_test/{}.csv'.format(since), book_order=book_order)
+    print("Case {}: {}-{} # {}M-{}W-{}L # Rate: W-L:{}".format(since[0:10], init_balance, round(balance), len(book_order), count_win, count_lose, round(count_win/count_lose,2)))
+
+
+if __name__ == '__main__':
+    start_times = [
+        None, # From Now
+        '2022-04-03T04:46:08.348Z', # From 2022-04-03T04:46:08.348Z,
+        '2022-03-02T04:46:08.348Z',
+        '2022-03-16T04:46:08.348Z',
+        '2022-03-28T04:46:08.348Z',
+        '2022-03-24T04:46:08.348Z', 
+        '2022-02-02T04:46:08.348Z',
+        '2022-02-12T04:46:08.348Z',
+        '2022-02-18T04:46:08.348Z',
+        '2022-02-24T04:46:08.348Z',
+    ]
+    
+    for since in start_times:
+        test_case(symbol='ADAUSDT', time_frame='1m', since=since, limit=1500, params={}, 
+            balance=2000, quantity=20, leverage=10, is_export=False)
+    
