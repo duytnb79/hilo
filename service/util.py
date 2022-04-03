@@ -43,10 +43,9 @@ class UtilService(object):
         if stop_loss_price and stop_loss_price != 0 and low_price <= stop_loss_price: return True
         return False
 
-    def get_fee(self, current_price, quantity, leverage, side="maker"):
-        if side == "taker" : fee_rate=0.0002
-        elif side == "maker" : fee_rate=0.0004
-        return quantity * leverage * current_price * fee_rate
+    def get_fee(self, current_price, quantity):
+        fee_rate=0.0004
+        return quantity * current_price * fee_rate
 
     def finish_order(self, high, low, last_price, balance, order):
         take_profit = order['take_profit']
@@ -65,9 +64,9 @@ class UtilService(object):
             #     "fee":self.get_fee(last_price, quantity, leverage,side="taker"),
             #     "value":round(self.get_value(entry, take_profit, leverage, quantity), 2)
             # }) 
-            balance += self.get_value(entry, take_profit, leverage, quantity) - self.get_fee(last_price, quantity, leverage,side="taker")
+            balance += self.get_value(entry, take_profit, leverage, quantity) - self.get_fee(last_price, quantity)
             order['balance_finish'] = balance
-            order['value'] = self.get_value(entry, take_profit, leverage, quantity) - self.get_fee(last_price, quantity, leverage,side="taker")
+            order['value'] = self.get_value(entry, take_profit, leverage, quantity) - self.get_fee(last_price, quantity)
             order['is_finish'] = True
             order['type'] = 'TAKE_PROFIT'
 
@@ -81,9 +80,9 @@ class UtilService(object):
             #     "fee": self.get_fee(last_price, quantity, leverage,side="taker"),
             #     "value": round(self.get_value(entry, stop_loss, leverage, quantity), 2)
             # })
-            balance -= self.get_value(entry, stop_loss, leverage, quantity) + self.get_fee(last_price, quantity, leverage,side="taker")
+            balance -= (self.get_value(entry, stop_loss, leverage, quantity) + self.get_fee(last_price, quantity))
             order['balance_finish'] = balance
-            order['value'] = self.get_value(entry, stop_loss, leverage, quantity) + self.get_fee(last_price, quantity, leverage,side="taker")
+            order['value'] = self.get_value(entry, stop_loss, leverage, quantity) + self.get_fee(last_price, quantity)
             order['is_finish'] = True 
             order['type'] = 'STOP_LOSS'
                
@@ -125,7 +124,6 @@ class UtilService(object):
                 else: 
                     stop_loss = round(last_price + last_price * (risk / 100) / leverage, 2)
                     take_profit = round(last_price - last_price * (reward / 100) / leverage, 2)
-                balance -= self.get_fee(last_price, quantity, leverage,side="maker")
                 # print("== Make order")
                 # pprint({
                 #     "balance": round(balance, 2),
@@ -144,7 +142,7 @@ class UtilService(object):
                     'entry': last_price,
                     'quantity': quantity,
                     'leverage': leverage,
-                    'fee': round(self.get_fee(last_price, quantity, leverage,side="maker"),2),
+                    'fee': round(self.get_fee(last_price, quantity),2),
                     'take_profit': take_profit,
                     'stop_loss': stop_loss,
                     'type': '',
