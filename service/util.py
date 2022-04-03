@@ -54,16 +54,7 @@ class UtilService(object):
         leverage = order['leverage'] 
         entry = order['entry']
 
-        if(self.is_take_profit(high, low, take_profit)): 
-            # print("=== Take profit")
-            # pprint({
-            #     "init":round(balance, 2), 
-            #     "after":round(balance + self.get_value(entry, take_profit, leverage, quantity) + self.get_fee(last_price, quantity, leverage,side="taker"),2), 
-            #     "entry":entry, 
-            #     "take_profit":take_profit,
-            #     "fee":self.get_fee(last_price, quantity, leverage,side="taker"),
-            #     "value":round(self.get_value(entry, take_profit, leverage, quantity), 2)
-            # }) 
+        if(self.is_take_profit(high, low, take_profit)):
             balance += self.get_value(entry, take_profit, leverage, quantity) - self.get_fee(last_price, quantity)
             order['balance_finish'] = balance
             order['value'] = self.get_value(entry, take_profit, leverage, quantity) - self.get_fee(last_price, quantity)
@@ -71,25 +62,12 @@ class UtilService(object):
             order['type'] = 'TAKE_PROFIT'
 
         elif(self.is_stop_loss(high, low, stop_loss)): 
-            # print("=== Stop loss")
-            # pprint({
-            #     "init":round(balance, 2), 
-            #     "after":round(balance - self.get_value(entry, stop_loss, leverage, quantity) + self.get_fee(last_price, quantity, leverage,side="taker"), 2), 
-            #     "entry":entry, 
-            #     "stop_loss": stop_loss, 
-            #     "fee": self.get_fee(last_price, quantity, leverage,side="taker"),
-            #     "value": round(self.get_value(entry, stop_loss, leverage, quantity), 2)
-            # })
             balance -= (self.get_value(entry, stop_loss, leverage, quantity) + self.get_fee(last_price, quantity))
             order['balance_finish'] = balance
             order['value'] = self.get_value(entry, stop_loss, leverage, quantity) + self.get_fee(last_price, quantity)
             order['is_finish'] = True 
             order['type'] = 'STOP_LOSS'
-               
-        # if order['is_finish']: 
-        #     pprint(order)
-        #     print("\n========\n")
-        
+                
         return balance
 
     def run_report(self, mark_klines, balance, quantity, leverage, limit = 31, risk=2):
@@ -124,16 +102,7 @@ class UtilService(object):
                 else: 
                     stop_loss = round(last_price + last_price * (risk / 100) / leverage, 2)
                     take_profit = round(last_price - last_price * (reward / 100) / leverage, 2)
-                # print("== Make order")
-                # pprint({
-                #     "balance": round(balance, 2),
-                #     "entry": entry,
-                #     "take_profit": take_profit,
-                #     "stop_loss": stop_loss,
-                #     "direction": direction,
-                #     "fee": round(self.get_fee(last_price, quantity, leverage,side="maker"),2),
-                # })
-
+              
                 book_order[candle[-1]['open_time']] = {
                     'balance': balance,
                     'balance_finish': balance,
@@ -147,9 +116,7 @@ class UtilService(object):
                     'stop_loss': stop_loss,
                     'type': '',
                     'is_finish': False,
-                }
-                # print('Make order')
-                # pprint(book_order[candle[-1]['open_time']])
+                } 
         return book_order, balance, count_win, count_lose
 
     def export_csv_order(self, path, book_order):
